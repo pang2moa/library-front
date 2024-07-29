@@ -32,6 +32,9 @@ pipeline {
         
         stage('배포') {
             steps {
+
+                sh 'pwd'
+
                 // 대상 디렉토리 생성 (없는 경우)
                 sh 'sudo mkdir -p /var/www/reactapp'
                 
