@@ -44,17 +44,29 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // 애플리케이션 디렉토리로 이동
-                    dir('/var/www/nextapp') {
-                        // 빌드 결과물 복사
-                        sh 'rsync -avz --delete $WORKSPACE/.next ./'
-                        sh 'rsync -avz --delete $WORKSPACE/public ./'
-                        sh 'rsync -avz $WORKSPACE/package*.json ./'
+                    sh '''
+                        rsync -avz --delete $WORKSPACE/.next /var/www/nextapp/
+                        rsync -avz --delete $WORKSPACE/public /var/www/nextapp/
+                        rsync -avz $WORKSPACE/package*.json /var/www/nextapp/
+                        
+                        cd /var/www/nextapp
+                        npm install --production
+                        
+                        pm2 delete nextjs-app || true
+                        pm2 start ecosystem.config.js
+                    '''
+                }
+            }
+        }
 
-                        // PM2로 애플리케이션 재시작
-                        sh 'pwd'
-                        sh 'pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start'
-                    }
+        stage('Cleanup') {
+            steps {
+                script {
+                sh '''
+                    cd /var/www/nextapp
+                    npm prune --production
+                    rm -rf .next/cache
+                '''
                 }
             }
         }
