@@ -28,6 +28,9 @@ pipeline {
             steps {
                 // 대상 디렉토리 생성 (없는 경우)
                 sh 'sudo mkdir -p /var/www/nextapp'
+
+                // Nginx 설정 파일 복사 (필요한 경우)
+                sh 'sudo cp nginx.conf /etc/nginx/conf.d/next-app.conf'
                 
                 // 빌드된 파일을 웹 서버 디렉토리로 복사
                 sh 'sudo rsync -avz .next/ /var/www/nextapp/.next/'
