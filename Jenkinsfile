@@ -1,58 +1,73 @@
 pipeline {
     agent any
-    
-    tools {
-        nodejs 'node 20.15.1'  // Global Tool Configuration에서 설정한 NodeJS 이름
+
+    environment {
+        NODE_VERSION = '20'  // 또는 프로젝트에서 사용하는 Node.js 버전
+        PM2_HOME = '/home/appuser/.pm2'  // PM2 홈 디렉토리 설정
     }
-    
+
     stages {
-        stage('소스 코드 체크아웃') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
-        stage('의존성 설치') {
-            steps {
-                sh 'npm install'
-            }
-        }
-        
-        stage('빌드') {
-            steps {
-                sh 'npm run build'
-            }
-        }
-        
-        stage('배포') {
-            steps {
-                // 대상 디렉토리 생성 (없는 경우)
-                sh 'sudo mkdir -p /var/www/nextapp'
 
-                // Nginx 설정 파일 복사 (필요한 경우)
-                sh 'sudo cp nginx.conf /etc/nginx/conf.d/next-app.conf'
-                
-                // 빌드된 파일을 웹 서버 디렉토리로 복사
-                sh 'sudo rsync -avz .next/ /var/www/nextapp/.next/'
-                sh 'sudo rsync -avz public/ /var/www/nextapp/public/'
-                sh 'sudo cp package.json /var/www/nextapp/'
-                
-                // node_modules 복사 (프로덕션 의존성만)
-                sh 'sudo mkdir -p /var/www/nextapp/node_modules'
-                sh 'sudo npm install --prefix /var/www/nextapp --only=prod'
-                
-                // Nginx 재시작
-                sh 'sudo systemctl restart nginx'
+        stage('Setup Node.js') {
+            steps {
+                nvm(nodeVersion: env.NODE_VERSION) {
+                    sh 'node --version'
+                    sh 'npm --version'
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                nvm(nodeVersion: env.NODE_VERSION) {
+                    script {
+                        // package.json이 변경되었는지 확인
+                        def packageChanged = sh(script: 'git diff HEAD^ HEAD --name-only | grep "package.json"', returnStatus: true) == 0
+                        if (packageChanged) {
+                            sh 'npm ci'  // npm install 대신 npm ci 사용
+                        } else {
+                            echo 'package.json not changed, skipping npm ci'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                nvm(nodeVersion: env.NODE_VERSION) {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // 애플리케이션 디렉토리로 이동
+                    dir('/var/www/nextapp') {
+                        // 빌드 결과물 복사
+                        sh 'rsync -avz --delete $WORKSPACE/.next ./'
+                        sh 'rsync -avz --delete $WORKSPACE/public ./'
+                        sh 'rsync -avz $WORKSPACE/package*.json ./'
+
+                        // PM2로 애플리케이션 재시작
+                        sh 'pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start'
+                    }
+                }
             }
         }
     }
-    
+
     post {
-        success {
-            echo '파이프라인이 성공적으로 완료되었습니다.'
-        }
-        failure {
-            echo '파이프라인 실행 중 오류가 발생했습니다.'
+        always {
+            // 작업 공간 정리
+            cleanWs()
         }
     }
 }
