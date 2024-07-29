@@ -16,19 +16,24 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    // package.json이 변경되었는지 확인
-                    def packageChanged = sh(script: 'git diff HEAD^ HEAD --name-only | grep "package.json"', returnStatus: true) == 0
-                    if (packageChanged) {
-                        sh 'npm ci'  // npm install 대신 npm ci 사용
-                    } else {
-                        echo 'package.json not changed, skipping npm ci'
-                    }
+    stage('Install Dependencies') {
+        steps {
+            script {
+                // 이전 빌드에서 node_modules가 캐시되었는지 확인
+                def nodeModulesExists = fileExists 'node_modules'
+                
+                // package.json이 변경되었는지 확인
+                def packageChanged = sh(script: 'git diff HEAD^ HEAD --name-only | grep "package.json"', returnStatus: true) == 0
+                
+                if (!nodeModulesExists || packageChanged) {
+                    echo 'Installing dependencies...'
+                    sh 'npm ci'
+                } else {
+                    echo 'Dependencies are up to date, skipping installation'
                 }
             }
         }
+    }
 
         stage('Build') {
             steps {
