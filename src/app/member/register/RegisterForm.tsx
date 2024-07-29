@@ -54,7 +54,7 @@ export default function RegisterForm() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4}>
           <FormControl isInvalid={!!errors.email}>
-            <FormLabel htmlFor="email">이메일</FormLabel>
+            <FormLabel htmlFor="email">이메일 2</FormLabel>
             <Input
               id="email"
               type="email"
