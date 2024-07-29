@@ -52,6 +52,7 @@ pipeline {
                         sh 'rsync -avz $WORKSPACE/package*.json ./'
 
                         // PM2로 애플리케이션 재시작
+                        sh 'pwd'
                         sh 'pm2 restart nextjs-app || pm2 start npm --name "nextjs-app" -- start'
                     }
                 }
