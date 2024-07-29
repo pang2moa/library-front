@@ -26,8 +26,15 @@ pipeline {
         
         stage('배포') {
             steps {
+                // 빌드 디렉토리 확인
+                sh 'ls -l'
+                sh 'pwd'
+                
+                // 대상 디렉토리 생성 (없는 경우)
+                sh 'sudo mkdir -p /var/www/reactapp'
+                
                 // 빌드된 파일을 웹 서버 디렉토리로 복사
-                sh 'rsync -avz build/ /var/www/reactapp/'
+                sh 'sudo rsync -avz build/ /var/www/reactapp/'
                 
                 // Nginx 설정 파일 복사 (필요한 경우)
                 sh 'sudo cp nginx.conf /etc/nginx/conf.d/react-app.conf'
