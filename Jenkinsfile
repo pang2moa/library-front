@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     tools {
-        nodejs 'NodeJS'  // Global Tool Configuration에서 설정한 NodeJS 이름
+        nodejs 'node 20.15.1'  // Global Tool Configuration에서 설정한 NodeJS 이름
     }
     
     stages {
