@@ -2,19 +2,13 @@ pipeline {
     agent any
     
     tools {
-        nodejs 'node 20.15.1'  // Global Tool Configuration에서 설정한 NodeJS 이름
+        nodejs 'NodeJS'  // Global Tool Configuration에서 설정한 NodeJS 이름
     }
     
     stages {
         stage('소스 코드 체크아웃') {
             steps {
                 checkout scm
-            }
-        }
-        
-        stage('build 디렉토리 생성') {
-            steps {
-                sh 'mkdir -p build'
             }
         }
         
@@ -32,14 +26,17 @@ pipeline {
         
         stage('배포') {
             steps {
-
-                sh 'pwd'
-
                 // 대상 디렉토리 생성 (없는 경우)
-                sh 'sudo mkdir -p /var/www/reactapp'
+                sh 'sudo mkdir -p /var/www/nextapp'
                 
                 // 빌드된 파일을 웹 서버 디렉토리로 복사
-                sh 'sudo rsync -avz build/ /var/www/reactapp/'
+                sh 'sudo rsync -avz .next/ /var/www/nextapp/.next/'
+                sh 'sudo rsync -avz public/ /var/www/nextapp/public/'
+                sh 'sudo cp package.json /var/www/nextapp/'
+                
+                // node_modules 복사 (프로덕션 의존성만)
+                sh 'sudo mkdir -p /var/www/nextapp/node_modules'
+                sh 'sudo npm install --prefix /var/www/nextapp --only=prod'
                 
                 // Nginx 재시작
                 sh 'sudo systemctl restart nginx'
