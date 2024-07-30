@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    compress: false,
     async rewrites() {
       return [
         {
@@ -7,6 +8,14 @@ const nextConfig = {
           destination: '/api/:path*',
         },
       ];
+    },
+    webpack(webpackConfig) {
+      return {
+        ...webpackConfig,
+        optimization: {
+          minimize: false,
+        },
+      };
     },
   }
   
