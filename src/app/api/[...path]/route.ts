@@ -36,6 +36,7 @@ async function handleProxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ message: "Not Found" }, { status: 404 });
   }
 
+  alert(1234);
   console.log(path);
   console.log(target);
 
