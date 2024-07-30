@@ -37,7 +37,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'npm run build && npm run prod_start'
+                sh 'npm run build'
             }
         }
 
