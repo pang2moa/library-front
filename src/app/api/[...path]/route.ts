@@ -19,29 +19,7 @@ export async function DELETE(request: NextRequest) {
 }
 
 async function handleProxy(request: NextRequest): Promise<NextResponse> {
-  const url = new URL(request.url);
-
-  const path = url.pathname.replace("/api/", "");
-
-  let target = "";
-  if (path.startsWith("RentalCard")) {
-    target = process.env.NEXT_PUBLIC_RENT_SERVICE_URL! + "/api/";
-  } else if (path.startsWith("book")) {
-    target = process.env.NEXT_PUBLIC_BOOK_SERVICE_URL! + "/api/";
-  } else if (path.startsWith("Member")) {
-    target = process.env.NEXT_PUBLIC_MEMBER_SERVICE_URL! + "/api/";
-  } else if (path.startsWith("books")) {
-    target = process.env.NEXT_PUBLIC_BEST_SELLER_SERVICE_URL! + "/api/";
-  } else {
-    return NextResponse.json({ message: "Not Found" }, { status: 404 });
-  }
-
-  alert(1234);
-  console.log(path);
-  console.log(target);
-
-  const targetUrl = new URL(path, target);
-
+  console.log(request);
   const headers = new Headers(request.headers);
   headers.delete("host");
 
@@ -54,7 +32,7 @@ async function handleProxy(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const response = await fetch(targetUrl.toString(), {
+    const response = await fetch(request.url, {
       method: request.method,
       headers: headers,
       body: body,
