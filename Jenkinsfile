@@ -53,7 +53,10 @@ pipeline {
                         npm install --production
                         
                         pm2 delete nextjs-app || true
+                        pm2 save --force
+                        sleep 2
                         pm2 start ecosystem.config.js
+                        pm2 save --force
                     '''
                 }
             }

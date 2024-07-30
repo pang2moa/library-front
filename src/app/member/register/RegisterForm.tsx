@@ -63,7 +63,7 @@ export default function RegisterForm() {
           </FormControl>
 
           <FormControl isInvalid={!!errors.id}>
-            <FormLabel htmlFor="id">아이디 23a</FormLabel>
+            <FormLabel htmlFor="id">아이디 23222a</FormLabel>
             <Input
               id="id"
               {...register('id', { required: '아이디는 필수입니다.' })}
