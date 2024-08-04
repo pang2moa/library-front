@@ -3,6 +3,7 @@ import { env } from 'process';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     compress: false,
+    output: 'standalone',
     async rewrites() {
       if (env.NODE_ENV === 'production') {
         return [
